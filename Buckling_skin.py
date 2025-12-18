@@ -3,10 +3,14 @@ import matplotlib.pyplot as plt
 import math
 import var as var
 import scipy.optimize
+import scipy.optimize
+import critical as cr
+import fn as fn
 import normalstresses as stress
 #When we're running multicell just divide B/2; ribs are for now every 0.5 m
 
-n=int(input("Number of the ribs"))
+n=int(input("Number of ribs"))
+n_spar = int(input("Number of spars"))
 pos=[]
 for i in range (n):
     pos.append(float(input("Give positions:")))     #Five position of ribs along the wingspan
@@ -18,6 +22,10 @@ B=[]
 for i in range (len(pos)-1):
     b1 = var.Cr-(var.Cr*(1-var.taper)/(var.b/2))*pos[i]
     B.append(b1)
+
+if n_spar > 2: 
+    for i in range (len(pos)-1):
+        B[i] = B[i]/(n-1)
 
 A=[]
 for i in range (len(pos)-1):
@@ -91,12 +99,7 @@ def k_c_calculation(AR_list):
     return K_C
         
 
-def crit_stress(t, AR_list): 
-    Crit_stress=[] 
-    for i in range (len(AR_list)): 
-        Crit_stress.append(math.pi**2*k_c*var.E/(12*(1-var.v**2)*(t/B[i])**2)) 
-    Crit_stress.append(0) 
-    return Crit_stress
+
 
 '''Margin of Safety calculation'''
 
@@ -114,6 +117,29 @@ def margin_of_safety(crit_list, applied_list):
 # 3) Compute applied stresses
 #applied = Applied_stress(normal_forces, areas)
 applied=stress_applied(pos)
+print("\n===== DEBUG: raw values at one span location =====")
+
+y_test = pos[0]   # root panel (you can also try mid-span later)
+
+print("y_test =", y_test)
+
+print("Normal force Npf(y) =", cr.Npf(y_test))
+print("Bending moment Mpf(y) =", cr.Mpf(y_test))
+
+geo = fn.WP4_2_wingbox_shape(y_test)
+print("Wingbox geometry array =", geo)
+
+Ixx = fn.WP4_2_Ixx(y_test)
+print("Second moment Ixx =", Ixx)
+
+z_val = stress.max_z(y_test)
+print("z (distance to extreme fibre) =", z_val)
+
+print("Normal stress =", stress.normalstress(y_test))
+print("Bending stress =", stress.bendingstress(y_test, z_val))
+
+print("================================================\n")
+
 print('applied stress:',applied)
 
 # 4) Compute k_c list (AR list must be passed)
@@ -124,22 +150,28 @@ print(k_c)
 B_adj = plate_AR(A,B)[1]
 crit = []
 for i in range(len(B_adj)):
-    crit_val = math.pi**2 * k_c[i] * var.E / (12*(1-var.v**2) * (desOp.t_skin1 / B[i])**2)
+    crit_val = math.pi**2 * k_c[i] * var.E / (12*(1-var.v**2)) * ((desOp.t_skin1 / B_adj[i])**2)
     crit.append(crit_val)
-
+print("crit=",crit )
 # 6) Margin of safety
 MOS = margin_of_safety(crit, applied)
 print("MOS:", MOS)
 
-
+#400-17y area of stringer in mm^2
 # 7) Plot
-plt.plot(MOS)
-plt.show()
+# plt.plot(MOS)
+# plt.show()
 
- #Margins 
-print(margin_of_safety(crit,applied))
-plt.plot(margin_of_safety(desOp.t_skin1))
-
-
+#  #Margins 
+# print(margin_of_safety(crit,applied))
+# plt.plot(margin_of_safety(desOp.t_skin1))
+pos = pos[:-1]
+plt.scatter(pos, MOS,
+            s=50,        # marker size
+            marker='o'    # marker style
+            )
+plt.xlabel("span")
+plt.ylabel("MOS")
+plt.title("Variation of MOS along span")
 
 plt.show()

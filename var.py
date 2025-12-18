@@ -5,23 +5,23 @@ t_spar = 0.010
 n_string_upper = 8
 n_string_lower = 8
 A_stringer = 4.0*10**(-4)
-b = 22.15*2
+b = 22.15*2 # [m]
 E = 72.4*10**9 #Elastic modulus
 G = 28*10**9 #Shear modulus
-v = E/(2*G)-1
-Cr= 6.53
+v = 0.33
+Cr= 6.53 # [m]
 taper = 0.2925
 
-t_skin = 2.5            # [mm]
-t_str = 5               # [mm]
-t_spar = 4              # [mm]
+t_skin = 0.0025            # [m]
+t_str = 0.005               # [m]
+t_spar = 0.004              # [m]
 n_spar = 2              
 n_str = 24
-h_str = 40              # [mm]
-w_str = 40              # [mm]
-h_root1 = 840           # [mm]
-h_root2 = 658.148       # [mm]
-h_root3 = 745.951       # [mm]
+h_str = 0.040              # [m]
+w_str = 0.040              # [m]
+h_root1 = 0.840           # [m]
+h_root2 = 0.658148       # [m]
+h_root3 = 0.745951       # [m]
 
 
 
@@ -31,7 +31,7 @@ t_spar_tip = 0.002
 
 n_string_upper = 15
 n_string_lower = 15
-A_stringer = 4*10**(-4)
+A_stringer = (4*10**(-4))
 b = 22.15*2
 E = 72.4*10**9 #Elastic modulus
 G = 28*10**9 #Shear modulus
