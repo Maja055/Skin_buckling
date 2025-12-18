@@ -1,7 +1,8 @@
-import DesignOptions as desOp
+#import DesignOptions as desOp
 import matplotlib.pyplot as plt
 import math
 import var as var
+import Skin_buckling_var as svar
 import scipy.optimize
 import scipy.optimize
 import critical as cr
@@ -17,10 +18,10 @@ for i in range (n):
 
 pos.append(float(var.b/2))
 pos.insert(0,float(0))      #Add zero position
-print(pos)
+print('positions:',pos)
 B=[]
 for i in range (len(pos)-1):
-    b1 = var.Cr-(var.Cr*(1-var.taper)/(var.b/2))*pos[i]
+    b1 = svar.Cr-(svar.Cr*(1-svar.taper)/(var.b/2))*pos[i]
     B.append(b1)
 
 if n_spar > 2: 
@@ -98,8 +99,13 @@ def k_c_calculation(AR_list):
         K_C.append(k_c_element)
     return K_C
         
-
-
+# find smallest skin thickness of each bay
+def skin_thickness(pos_list):
+    t = []
+    for i in range(len(pos_list)-1):
+        t.append(var.tskin(pos_list[i+1]))
+    return t
+print('skin_thicknesses:',skin_thickness(pos))
 
 '''Margin of Safety calculation'''
 
@@ -119,7 +125,7 @@ def margin_of_safety(crit_list, applied_list):
 applied=stress_applied(pos)
 print("\n===== DEBUG: raw values at one span location =====")
 
-y_test = pos[0]   # root panel (you can also try mid-span later)
+y_test = pos[0] +20   # root panel (you can also try mid-span later)
 
 print("y_test =", y_test)
 
@@ -148,9 +154,10 @@ print(k_c)
 
 # 5) Compute critical stresses
 B_adj = plate_AR(A,B)[1]
+skin_t_list = skin_thickness(pos)
 crit = []
 for i in range(len(B_adj)):
-    crit_val = math.pi**2 * k_c[i] * var.E / (12*(1-var.v**2)) * ((desOp.t_skin1 / B_adj[i])**2)
+    crit_val = math.pi**2 * k_c[i] * var.E / (12*(1-svar.v**2)) * ((skin_t_list[i] / B_adj[i])**2)
     crit.append(crit_val)
 print("crit=",crit )
 # 6) Margin of safety
@@ -162,10 +169,20 @@ print("MOS:", MOS)
 # plt.plot(MOS)
 # plt.show()
 
+
+
 #  #Margins 
 # print(margin_of_safety(crit,applied))
 # plt.plot(margin_of_safety(desOp.t_skin1))
 pos = pos[:-1]
+
+# # plot critical stress
+# plt.plot(pos,crit)
+
+# # plot applied stress
+# plt.plot(pos,applied)
+
+
 plt.scatter(pos, MOS,
             s=50,        # marker size
             marker='o'    # marker style
