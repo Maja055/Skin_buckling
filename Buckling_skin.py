@@ -8,30 +8,43 @@ import scipy.optimize
 import critical as cr
 import fn as fn
 import normalstresses as stress
+import numpy as np
 #When we're running multicell just divide B/2; ribs are for now every 0.5 m
 
-n=int(input("Number of ribs"))
-n_spar = int(input("Number of spars"))
-pos=[]
-for i in range (n):
-    pos.append(float(input("Give positions:")))     #Five position of ribs along the wingspan
+#n=int(input("Number of ribs"))
+#n_spar = int(input("Number of spars"))
+n_spar = int(3)
+
+pos=[0.793, 1.546, 2.261, 2.942, 3.595, 4.223, 5.2, 5.989, 6.546,
+  7.091, 7.624, 8.2, 8.661, 9.168, 9.669, 10.164, 10.655, 11.143, 11.628,
+  12.112, 12.595, 13.079, 13.564, 14.052, 14.543, 15.04, 15.542, 16.053, 16.572,
+  17.103, 17.648, 18.208, 18.788, 19.391, 20.022, 20.686, 21.392]
+
+#for i in range (n):
+#    pos.append(float(input("Give positions:")))     #Five position of ribs along the wingspan
 
 pos.append(float(var.b/2))
 pos.insert(0,float(0))      #Add zero position
 print('positions:',pos)
 B=[]
 for i in range (len(pos)-1):
-    b1 = svar.Cr-(svar.Cr*(1-svar.taper)/(var.b/2))*pos[i]
+    b1 = svar.Cr*0.45-(svar.Cr*0.45*(1-svar.taper)/(var.b/2))*pos[i]
+    if n_spar == 2:
+        b1 = b1/(var.n_string_upper-1)
+    if n_spar == 3:
+        b1 = b1/(var.n_string_upper-2)
     B.append(b1)
+print('bay width: ',B)
 
-if n_spar > 2: 
-    for i in range (len(pos)-1):
-        B[i] = B[i]/(n-1)
+# if n_spar > 2: 
+#     for i in range (len(pos)-1):
+#         B[i] = B[i]/(n_spar-1)
 
 A=[]
 for i in range (len(pos)-1):
     A.append(pos[i+1]-pos[i])
-    
+print('bay length: ',A)
+
 '''Applied stress calculation'''
 z=[]
 for i in range (len(pos)-1):
@@ -162,19 +175,24 @@ for i in range(len(B_adj)):
 print("crit=",crit )
 # 6) Margin of safety
 MOS = margin_of_safety(crit, applied)
-print("MOS:", MOS)
+MOS = [float(x) for x in MOS]
+print("MOS:")
+for value in MOS:
+    print(value)
 
 #400-17y area of stringer in mm^2
 # 7) Plot
 # plt.plot(MOS)
 # plt.show()
 
-
+print('pos:')
+for value in pos:
+    print(value)
 
 #  #Margins 
 # print(margin_of_safety(crit,applied))
 # plt.plot(margin_of_safety(desOp.t_skin1))
-pos = pos[:-1]
+
 
 # # plot critical stress
 # plt.plot(pos,crit)
@@ -182,13 +200,34 @@ pos = pos[:-1]
 # # plot applied stress
 # plt.plot(pos,applied)
 
+#### for clarity
+# pos = pos[:-4]
+# MOS = MOS[:-4]
 
-plt.scatter(pos, MOS,
-            s=50,        # marker size
-            marker='o'    # marker style
-            )
-plt.xlabel("span")
-plt.ylabel("MOS")
-plt.title("Variation of MOS along span")
+# plt.scatter(pos, MOS,
+#             s=30,        # marker size
+#             marker='o'    # marker style
+#             )
+# plt.grid()
+# plt.xlabel('Distance along Wingspan [m]')
+# plt.ylabel('Margin of Safety [-]')
+# plt.title('Variation of skin buckling margin of safety along span')
+
+# plt.show()
+
+#### for clarity
+pos = pos[:-1]
+
+MOS = MOS[:-1]
+
+MOS_extended = MOS + [MOS[-1]]
+plt.step(pos, MOS_extended, where='post')
+plt.grid()
+plt.xlabel('Distance along Wingspan [m]')
+plt.ylabel('Margin of Safety [-]')
+plt.title('Variation of skin buckling margin of safety along span')
+plt.xlim(left=0)
+plt.ylim(bottom=0)
+plt.axhline(y=1, color='red', linestyle='--')
 
 plt.show()

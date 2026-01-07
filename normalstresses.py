@@ -12,7 +12,7 @@ def max_z(y):
 
 
 def bendingstress(y, z):
-    return cr.Mpf(y)/fn.WP4_2_Ixx(y) * z           #convert never mind Louis says it is in N/m
+    return cr.Mpf(y)/fn.WP4_2_Ixx(y) * z           # Louis says it is in N/m
 
 def normalstress(y):
     geo = fn.WP4_2_wingbox_shape(y)
